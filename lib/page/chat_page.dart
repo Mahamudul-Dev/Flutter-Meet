@@ -6,6 +6,7 @@ import 'package:socket_io/controllers/socket_controller.dart';
 class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    Get.lazyPut(() => SocketController());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Socket.IO Chat'),
@@ -18,16 +19,16 @@ class ChatScreen extends StatelessWidget {
                 itemCount: Get.find<SocketController>().messages.length,
                 itemBuilder: (context, index) {
                   return BubbleSpecialThree(
-                    text: Get.find<SocketController>().messages[index].message,
+                    text: Get.find<SocketController>().messages[index].message.text,
                     color: Get.find<SocketController>().box.read('user') ==
                             Get.find<SocketController>()
                                 .messages[index]
-                                .username
+                                .sender
                         ? Colors.blue
                         : Colors.grey.shade400,
                     tail: true,
                     isSender: Get.find<SocketController>().box.read('user') ==
-                        Get.find<SocketController>().messages[index].username,
+                        Get.find<SocketController>().messages[index].sender,
                     textStyle:
                         const TextStyle(color: Colors.white, fontSize: 16),
                   );

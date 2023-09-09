@@ -6,7 +6,7 @@ import 'package:socket_io/page/chat_page.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketController extends GetxController {
-  IO.Socket socket = IO.io('https://chat.linkfy.org', <String, dynamic>{
+  IO.Socket socket = IO.io('http://linkfysocket.linkfy.org:3434', <String, dynamic>{
     'transports': ['websocket']
   });
 
@@ -14,6 +14,7 @@ class SocketController extends GetxController {
 
   TextEditingController messageController = TextEditingController();
   TextEditingController userNameController = TextEditingController();
+  TextEditingController passController = TextEditingController();
 
   RxList<MessageModel> messages = <MessageModel>[].obs;
 
@@ -30,14 +31,14 @@ class SocketController extends GetxController {
   }
 
   void joinChat(BuildContext context) {
-    box.writeIfNull('user', userNameController.text);
+    box.write('user', userNameController.text);
     socket.emit('join', box.read('user'));
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => ChatScreen()));
 
-    socket.on('chatMessage', (data) {
-      var msg =
-          MessageModel(username: data['username'], message: data['message']);
+    socket.on('privateMessage', (data) {
+      var msg = MessageModel.fromJson(data);
+      // var msg = MessageModel(message: data['message'], attachments: data['attachments'], receiver: data['attachments'], createdAt: data['createdAt'], updatedAt: data['updatedAt']);
       messages.add(msg);
       print(msg.message);
       print(data);
@@ -47,7 +48,9 @@ class SocketController extends GetxController {
   }
 
   void send() {
-    SocketController().socket.emit('chatMessage', messageController.text);
+    //final uid = box.read('user');
+    final msg = MessageModel(message: Message(text: messageController.text), attachments: [], users: [], sender: box.read('user'), receiver: 'Roki', createdAt: DateTime.now().toString(), updatedAt: DateTime.now().toString());
+    socket.emit('privateMessage', msg);
     update();
     messageController.clear();
   }
