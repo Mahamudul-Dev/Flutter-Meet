@@ -7,8 +7,11 @@ class AuthService {
   final store = GetStorage();
 
   Widget checkLogin() {
-    if (store.hasData('user')) {
-      return ChatScreen();
+    if (store.hasData('email') && store.hasData('id')) {
+      return ChatScreen(
+        email: store.read('email'),
+        id: store.read('id'),
+      );
     } else {
       return LoginPage();
     }

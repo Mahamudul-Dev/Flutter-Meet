@@ -13,14 +13,6 @@ class _LoginPageState extends State<LoginPage> {
   final controller = Get.put(SocketController());
 
   @override
-  void initState() {
-    if (Get.find<SocketController>().box.hasData('user')) {
-      controller.joinChat(context);
-    }
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -32,18 +24,21 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextFormField(
-              controller: controller.userNameController,
-              decoration: const InputDecoration(label: Text('Username')),
+              controller: controller.emailController,
+              decoration: const InputDecoration(label: Text('Email')),
             ),
             const SizedBox(
               height: 15,
+            ),
+            TextFormField(
+              controller: controller.passController,
+              decoration: const InputDecoration(label: Text('Password')),
             ),
             const SizedBox(
               height: 15,
             ),
             ElevatedButton(
-                onPressed: () => controller.joinChat(context),
-                child: const Text('Login'))
+                onPressed: () => controller.login(), child: const Text('Login'))
           ],
         ),
       ),

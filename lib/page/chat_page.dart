@@ -1,9 +1,54 @@
 import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:socket_io/controllers/socket_controller.dart';
 
-class ChatScreen extends StatelessWidget {
+import 'package:socket_io/controllers/socket_controller.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+import '../model/messege_model.dart';
+
+class ChatScreen extends StatefulWidget {
+  ChatScreen({
+    Key? key,
+    required this.email,
+    required this.id,
+  }) : super(key: key);
+
+  final String email;
+  final String id;
+  RxList<MessageModel> messages = <MessageModel>[].obs;
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  @override
+  void initState() {
+    IO.Socket socket =
+        IO.io('http://linkfysocket.linkfy.org:3434', <String, dynamic>{
+      'transports': ['websocket'],
+      'auth': {'token': widget.id}
+    });
+    socket.connect();
+
+    socket.onConnect((data) => print('Connection Success'));
+    socket.onConnectError((data) => print(data.toString()));
+    socket.onDisconnect((data) => print('desconnected.'));
+
+    socket.emit('join', widget.email);
+
+    socket.on('privateMessage', (data) {
+      var msg = MessageModel.fromJson(data);
+      // var msg = MessageModel(message: data['message'], attachments: data['attachments'], receiver: data['attachments'], createdAt: data['createdAt'], updatedAt: data['updatedAt']);
+      widget.messages.add(msg);
+      print(msg.message);
+      print(data);
+      print(widget.messages);
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     Get.lazyPut(() => SocketController());
@@ -19,11 +64,12 @@ class ChatScreen extends StatelessWidget {
                 itemCount: Get.find<SocketController>().messages.length,
                 itemBuilder: (context, index) {
                   return BubbleSpecialThree(
-                    text: Get.find<SocketController>().messages[index].message.text,
+                    text: Get.find<SocketController>()
+                        .messages[index]
+                        .message
+                        .text,
                     color: Get.find<SocketController>().box.read('user') ==
-                            Get.find<SocketController>()
-                                .messages[index]
-                                .sender
+                            Get.find<SocketController>().messages[index].sender
                         ? Colors.blue
                         : Colors.grey.shade400,
                     tail: true,
